@@ -1,0 +1,22 @@
+﻿<Page
+    x:Class="The_Missing_Pretzels.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:The_Missing_Pretzels"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Background="#d9598c" RenderTransformOrigin="0,0.5">
+        <TextBlock Text = "The Missing Pretzels" Margin = "499,329,511,593" FontSize="42" FontStyle="Normal" TextAlignment="Center" RenderTransformOrigin="0.497,-0.748"/>
+
+        <Button Height="63" Width="295" HorizontalAlignment="Center" FontSize="24" Click="Start_Game">
+            Start Game
+        </Button>
+
+        <!--<Button Height="63" Width="295" HorizontalAlignment="Center" FontSize="24" Click="Leaderboard" Margin="0,572,0,0" VerticalAlignment="Top">
+            Leaderboard
+        </Button>-->
+    </Grid>
+</Page>
