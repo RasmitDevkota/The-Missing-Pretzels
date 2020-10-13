@@ -97,5 +97,10 @@ namespace The_Missing_Pretzels
 
 			return deleteTask.Result;
 		}
+
+		public static string EmailPasswordSignIn()
+        {
+			return "";
+        }
 	}
 }
