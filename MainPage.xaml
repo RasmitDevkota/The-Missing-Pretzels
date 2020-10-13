@@ -15,8 +15,8 @@
             Start Game
         </Button>
 
-        <!--<Button Height="63" Width="295" HorizontalAlignment="Center" FontSize="24" Click="Leaderboard" Margin="0,572,0,0" VerticalAlignment="Top">
+        <Button Height="63" Width="295" HorizontalAlignment="Center" FontSize="24" Click="Leaderboard" Margin="0,600,0,0" VerticalAlignment="Top">
             Leaderboard
-        </Button>-->
+        </Button>
     </Grid>
 </Page>
