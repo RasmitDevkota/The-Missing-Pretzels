@@ -19,148 +19,161 @@ using Windows.UI.Core;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Windows.System;
+using Windows.UI.ViewManagement;
 
 namespace The_Missing_Pretzels
 {
-    public sealed partial class GamePage : Page
-    {
-        public GamePage()
-        {
-            this.InitializeComponent();
+	public sealed partial class GamePage : Page
+	{
+		public GamePage()
+		{
+			this.InitializeComponent();
 
-            Begin_Game();
+			var view = ApplicationView.GetForCurrentView();
+			if (!view.IsFullScreenMode)
+			{
+				if (view.TryEnterFullScreenMode())
+				{
+					ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
+				}
+			}
 
-            Window.Current.CoreWindow.Dispatcher.AcceleratorKeyActivated += (window, e) =>
-            {
-                switch (e.VirtualKey)
-                {
-                    case VirtualKey.Escape:
-                        this.Frame.Navigate(typeof(MainPage));
-                        break;
-                }
-            };
-        }
+			Begin_Game();
 
-        int score = 0;
-        int pretzelCount = 0;
-        int pretzelLoss = 0;
+			Window.Current.CoreWindow.Dispatcher.AcceleratorKeyActivated += (window, e) =>
+			{
+				switch (e.VirtualKey)
+				{
+					case VirtualKey.Escape:
+						this.Frame.Navigate(typeof(MainPage));
+						break;
+				}
+			};
 
-        private async void Begin_Game()
-        {
+			Debug.WriteLine(((Frame)Window.Current.Content).ActualWidth + "," + ((Frame)Window.Current.Content).ActualHeight);
+		}
 
-            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
-            {
+		int score = 0;
+		int pretzelCount = 0;
+		int pretzelLoss = 0;
 
-                while (pretzelCount <= 100 && pretzelLoss <= 50)
-                {
-                    int left = (new Random()).Next(0, 2000);
+		private async void Begin_Game()
+		{
+			await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+			{
+				while (pretzelCount <= 100 && pretzelLoss <= 50)
+				{
+					int left = (new Random()).Next(0, (int)Math.Floor(((Frame)Window.Current.Content).ActualWidth));
 
-                    Button pretzelButton = new Button
-                    {
-                        Name = "pretzel" + pretzelCount,
-                        Background = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0)),
-                        Height = 61,
-                        Width = 73,
-                        Margin = new Thickness
-                        {
-                            Top = 0,
-                            Left = left
-                        },
-                    };
+					Button pretzelButton = new Button
+					{
+						Name = "pretzel" + pretzelCount,
+						Background = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0)),
+						Height = 61,
+						Width = 73,
+						Margin = new Thickness
+						{
+							Top = -0.5 * ((Frame)Window.Current.Content).ActualHeight,
+							Left = left
+						},
+					};
 
-                    pretzelButton.Click += (sender, e) =>
-                    {
-                        pretzelCount--;
-                        score++;
-                        Pretzel_Click(pretzelButton);
-                    };
+					pretzelButton.Click += (sender, e) =>
+					{
+						pretzelCount--;
+						score++;
+						Pretzel_Click(pretzelButton);
+					};
 
-                    Image pretzelImage = new Image
-                    {
-                        Source = new BitmapImage(new Uri("ms-appx:///Assets/pretzel.png", UriKind.Absolute)),
-                        Stretch = Stretch.UniformToFill,
-                    };
+					Image pretzelImage = new Image
+					{
+						Source = new BitmapImage(new Uri("ms-appx:///Assets/pretzel.png", UriKind.Absolute)),
+						Stretch = Stretch.UniformToFill,
+					};
 
-                    pretzelButton.Content = pretzelImage;
+					pretzelButton.Content = pretzelImage;
 
-                    Pretzels_Stack.Children.Add(pretzelButton);
+					Pretzels_Stack.Children.Add(pretzelButton);
 
-                    Debug.WriteLine("Added pretzel #" + pretzelCount);
+					Debug.WriteLine("Added pretzel #" + pretzelCount);
 
-                    Pretzel_Move(pretzelButton);
+					Pretzel_Move(pretzelButton);
 
-                    pretzelCount++;
+					pretzelCount++;
 
-                    await Task.Delay(500);
-                }
+					await Task.Delay(500);
+				}
 
-                if (pretzelLoss >= 50)
-                {
-                    Debug.WriteLine("Game over!");
+				if (pretzelLoss >= 50)
+				{
+					Debug.WriteLine("Game over!");
 
-                    ContentDialog deleteFileDialog = new ContentDialog
-                    {
-                        Title = "Delete file permanently?",
-                        Content = "Game over! Your score was: " + score + "! Would you like to play again?",
-                        PrimaryButtonText = "Play Again",
-                        CloseButtonText = "Return to Menu"
-                    };
+					ContentDialog deleteFileDialog = new ContentDialog
+					{
+						Title = "Game over!",
+						Content = "Game over! Your score was: " + score + "! Would you like to play again?",
+						PrimaryButtonText = "Play Again",
+						CloseButtonText = "Return to Menu"
+					};
 
-                    ContentDialogResult result = await deleteFileDialog.ShowAsync();
+					ContentDialogResult result = await deleteFileDialog.ShowAsync();
 
-                    if (result == ContentDialogResult.Primary)
-                    {
-                        score = 0;
-                        pretzelCount = 0;
-                        pretzelLoss = 0;
+					if (result == ContentDialogResult.Primary)
+					{
+						score = 0;
+						pretzelCount = 0;
+						pretzelLoss = 0;
 
-                        Pretzels_Stack.Children.Clear();
+						Pretzels_Stack.Children.Clear();
 
-                        await Task.Delay(500);
+						await Task.Delay(500);
 
-                        Begin_Game();
-                    }
-                    else
-                    {
-                        this.Frame.Navigate(typeof(MainPage));
-                    }
-                }
-            });
-        }
+						Begin_Game();
+					}
+					else
+					{
+						this.Frame.Navigate(typeof(MainPage));
+					}
+				}
+			});
+		}
 
-        private async void Pretzel_Click(Button pretzelButton)
-        {
-            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                Pretzels_Stack.Children.Remove(pretzelButton);
-                Debug.WriteLine("Removed a pretzel!");
-            });
-        }
+		private async void Pretzel_Click(Button pretzelButton)
+		{
+			await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+			{
+				Pretzels_Stack.Children.Remove(pretzelButton);
+				Debug.WriteLine("Removed a pretzel!");
+			});
+		}
 
-        private async void Pretzel_Move(Button pretzelButton)
-        {
-            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
-            {
-                while (pretzelButton.Margin.Top <= 50)
-                {
-                    pretzelButton.Margin = new Thickness
-                    {
-                        Top = pretzelButton.Margin.Top + 1,
-                        Left = pretzelButton.Margin.Left
-                    };
+		private async void Pretzel_Move(Button pretzelButton)
+		{
+			await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+			{
+				while (pretzelButton.Margin.Top <= ((Frame)Window.Current.Content).ActualHeight)
+				{
+					double weight = Convert.ToDouble(pretzelButton.Name.Substring(7));
 
-                    await Task.Delay(500);
-                }
+					pretzelButton.Margin = new Thickness
+					{
+						Top = pretzelButton.Margin.Top + 10,
+						Left = pretzelButton.Margin.Left
+					};
 
-                if (pretzelButton.Margin.Top >= 50)
-                {
-                    Pretzels_Stack.Children.Remove(pretzelButton);
-                    pretzelCount--;
-                    pretzelLoss++;
+					await Task.Delay(50);
+				}
 
-                    Debug.WriteLine("Lost a pretzel! " + pretzelLoss);
-                }
-            });
-        }
-    }
+				if (pretzelButton.Margin.Top >= ((Frame)Window.Current.Content).ActualHeight)
+				{
+					Pretzels_Stack.Children.Remove(pretzelButton);
+					pretzelCount--;
+					pretzelLoss++;
+
+					Debug.WriteLine(pretzelButton.Margin.Top);
+					Debug.WriteLine("Lost a pretzel! " + pretzelLoss);
+				}
+			});
+		}
+	}
 }
