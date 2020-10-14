@@ -9,7 +9,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Image Source="Assets/background.png" Height="1000"/>
+        <Image x:Name="Background_Image" Source="Assets/background.png" Height="1000"/>
 
         <Grid x:Name="Pretzels_Stack" Margin="0,0,0,0"/>
     </Grid>

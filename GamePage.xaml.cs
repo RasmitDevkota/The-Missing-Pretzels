@@ -49,8 +49,6 @@ namespace The_Missing_Pretzels
 						break;
 				}
 			};
-
-			Debug.WriteLine(((Frame)Window.Current.Content).ActualWidth + "," + ((Frame)Window.Current.Content).ActualHeight);
 		}
 
 		int score = 0;
@@ -63,7 +61,7 @@ namespace The_Missing_Pretzels
 			{
 				while (pretzelCount <= 100 && pretzelLoss <= 50)
 				{
-					int left = (new Random()).Next(0, (int)Math.Floor(((Frame)Window.Current.Content).ActualWidth));
+					int left = (new Random()).Next(0, (int)Math.Floor(0.96 * ((Frame)Window.Current.Content).ActualWidth));
 
 					Button pretzelButton = new Button
 					{
@@ -73,16 +71,27 @@ namespace The_Missing_Pretzels
 						Width = 73,
 						Margin = new Thickness
 						{
-							Top = -0.5 * ((Frame)Window.Current.Content).ActualHeight,
+							Top = -0.8 * ((Frame)Window.Current.Content).ActualHeight,
 							Left = left
 						},
 					};
 
-					pretzelButton.Click += (sender, e) =>
+					pretzelButton.Click += async (sender, e) =>
 					{
 						pretzelCount--;
 						score++;
 						Pretzel_Click(pretzelButton);
+
+						var pretzelSound = new MediaElement();
+						pretzelSound.Stop();
+						var folder = await Windows.ApplicationModel.Package.Current.InstalledLocation.GetFolderAsync("Assets");
+						var file = await folder.GetFileAsync("pretzel.mp4");
+						var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
+						pretzelSound.SetSource(stream, "");
+
+						pretzelSound.Play();
+						await Task.Delay(250);
+						pretzelSound.Stop();
 					};
 
 					Image pretzelImage = new Image
@@ -101,7 +110,7 @@ namespace The_Missing_Pretzels
 
 					pretzelCount++;
 
-					await Task.Delay(500);
+					await Task.Delay(250);
 				}
 
 				if (pretzelLoss >= 50)
@@ -113,7 +122,7 @@ namespace The_Missing_Pretzels
 						Title = "Game over!",
 						Content = "Game over! Your score was: " + score + "! Would you like to play again?",
 						PrimaryButtonText = "Play Again",
-						CloseButtonText = "Return to Menu"
+						CloseButtonText = "Return to Home Screen"
 					};
 
 					ContentDialogResult result = await deleteFileDialog.ShowAsync();
@@ -143,6 +152,7 @@ namespace The_Missing_Pretzels
 			await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
 			{
 				Pretzels_Stack.Children.Remove(pretzelButton);
+
 				Debug.WriteLine("Removed a pretzel!");
 			});
 		}
@@ -151,7 +161,7 @@ namespace The_Missing_Pretzels
 		{
 			await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
 			{
-				while (pretzelButton.Margin.Top <= ((Frame)Window.Current.Content).ActualHeight)
+				while (pretzelButton.Margin.Top <= 0.8 * ((Frame)Window.Current.Content).ActualHeight)
 				{
 					double weight = Convert.ToDouble(pretzelButton.Name.Substring(7));
 
@@ -164,13 +174,12 @@ namespace The_Missing_Pretzels
 					await Task.Delay(50);
 				}
 
-				if (pretzelButton.Margin.Top >= ((Frame)Window.Current.Content).ActualHeight)
+				if (pretzelButton.Margin.Top >= 0.8 * ((Frame)Window.Current.Content).ActualHeight)
 				{
 					Pretzels_Stack.Children.Remove(pretzelButton);
 					pretzelCount--;
 					pretzelLoss++;
 
-					Debug.WriteLine(pretzelButton.Margin.Top);
 					Debug.WriteLine("Lost a pretzel! " + pretzelLoss);
 				}
 			});
